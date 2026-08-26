@@ -489,23 +489,6 @@ const [error, setError] = useState("");
                     <th>Actions</th>
                   </tr>
                 </thead>
-
-                <tbody>
-                  <table>
-  <thead>
-    <tr>
-      <th>Name</th>
-      <th>Email</th>
-      <th>Course</th>
-      <th>Department</th>
-      <th>Year</th>
-      <th>Campus</th>
-      <th>Role</th>
-      <th>Status</th>
-      <th>Actions</th>
-    </tr>
-  </thead>
-
   <tbody>
     {users
       .filter(u =>
