@@ -389,7 +389,24 @@ const [users, setUsers] = useState([]);
 const [search, setSearch] = useState("");
 const [selectedUser, setSelectedUser] = useState(null);
 const [error, setError] = useState("");
+const toggleUserStatus = async (u) => {
+  try {
+    const newStatus = u.status === "blocked" ? "active" : "blocked";
 
+    await api(`/api/admin/users/${u.id}/status`, {
+      method: "PATCH",
+      body: JSON.stringify({ status: newStatus }),
+    });
+
+    setUsers(users.map(user =>
+      user.id === u.id
+        ? { ...user, status: newStatus }
+        : user
+    ));
+  } catch (e) {
+    setError(e.message);
+  }
+};
   useEffect(() => {
     if (!user || user.role !== "admin") return;
 
@@ -473,9 +490,68 @@ const [error, setError] = useState("");
                 <h2>Users</h2>
               </div>
             </div>
+<div className="table-wrap">
+  <table>
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Email</th>
+        <th>Course</th>
+        <th>Department</th>
+        <th>Year</th>
+        <th>Campus</th>
+        <th>Role</th>
+        <th>Status</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
 
-            <div className="table-wrap">
-              <table>
+    <tbody>
+      {users
+        .filter(u =>
+          `${u.name} ${u.email}`
+            .toLowerCase()
+            .includes(search.toLowerCase())
+        )
+        .map(u => (
+          <tr key={u.id}>
+            <td>{u.name}</td>
+            <td>{u.email}</td>
+            <td>{u.course || "-"}</td>
+            <td>{u.department || "-"}</td>
+            <td>{u.year || "-"}</td>
+            <td>{u.campus || "-"}</td>
+            <td>{u.role}</td>
+            <td>{u.status || "active"}</td>
+
+            <td>
+              <button
+                className="btn small outline"
+                onClick={() => toggleUserStatus(u)}
+                disabled={u.id === user.id}
+              >
+                {u.status === "blocked" ? "Unblock" : "Block"}
+              </button>
+
+              <button
+                className="btn small outline"
+                onClick={() => setSelectedUser(u)}
+              >
+                View
+              </button>
+            </td>
+          </tr>
+        ))}
+    </tbody>
+  </table>
+
+  {!users.length && (
+    <Empty
+      title="No users found"
+      text="There are no registered users yet."
+    />
+  )}
+</div>
                 <thead>
                   <tr>
                     <th>Name</th>
@@ -510,42 +586,6 @@ const [error, setError] = useState("");
         </tr>
       ))}
   </tbody>
-</table>
-                  {users
-  .filter(u =>
-    `${u.name} ${u.email}`.toLowerCase().includes(search.toLowerCase())
-  )
-  .map(u => (
-                    <tr key={u.id}>
-                      <td>{u.name}</td>
-                      <td>{u.email}</td>
-                      <td>{u.course}</td>
-                      <td>{u.department}</td>
-                      <td>{u.year}</td>
-                      <td>{u.campus}</td>
-                      <td>{u.role}</td>
-                      <td>{u.status || "active"}</td>
-<td>
-  <button
-    className="btn small outline"
-    onClick={() => toggleUserStatus(u)}
-    disabled={u.id === user.id}
-  >
-    {u.status === "blocked" ? "Unblock" : "Block"}
-  </button>
-
-  <button
-    className="btn small outline"
-    onClick={() => setSelectedUser(u)}
-  >
-    View
-  </button>
-</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-
               {!users.length && (
                 <Empty
                   title="No users found"
@@ -554,7 +594,6 @@ const [error, setError] = useState("");
               )}
             </div>
           </div>
-        </div>
       </section>
     </Page>
   );
