@@ -199,12 +199,16 @@ function Marketplace({user}) {
   </Page>
 }
 
-function ItemCard({item,onSave}){return <article className="item-card card"><div className="item-image">{item.image||"📦"}<span className="pill">{item.exchange_type}</span></div><div className="card-body"><div className="card-top"><span className="category">{item.category}</span><button className="icon-btn" onClick={onSave} title="Save"><Heart size={17}/></button></div><h3>{item.name}</h3><p>{item.description}</p><div className="meta"><span><Tag size={14}/>{item.condition}</span><span><MapPin size={14}/>{item.location}</span></div><div className="card-footer"><small>Posted by {item.owner_name}</small><button
+function ItemCard({item,onSave}){return <article className="item-card card"><div className="item-image">{item.image||"📦"}<span className="pill">{item.exchange_type}</span></div><div className="card-body"><div className="card-top"><span className="category">{item.category}</span><button className="icon-btn" onClick={onSave} title="Save"><Heart size={17}/></button></div><h3>{item.name}</h3><p>{item.description}</p><div className="meta"><span><Tag size={14}/>{item.condition}</span><span><MapPin size={14}/>{item.location}</span></div><div className="card-footer"><small>Posted by {item.owner_name}</small>
+<button
   className="btn small outline"
-  onClick={() => alert("BUTTON IS WORKING")}
+  onClick={() => alert(
+    `Item: ${item.name}\n\nCategory: ${item.category}\nDescription: ${item.description}\nCondition: ${item.condition}\nLocation: ${item.location}\nType: ${item.exchange_type}\nPosted by: ${item.owner_name}`
+  )}
 >
   View Details
-</button></div></div></article>}
+</button>
+</div></div></article>}
 
 function ItemModal({onClose,onCreated}) {
   const [form,setForm]=useState({name:"",description:"",category:"Books",condition:"Good",exchangeType:"Exchange",location:"",preferredExchange:""});
