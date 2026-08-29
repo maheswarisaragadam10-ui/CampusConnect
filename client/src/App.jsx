@@ -199,7 +199,12 @@ function Marketplace({user}) {
   </Page>
 }
 
-function ItemCard({item,onSave}){return <article className="item-card card"><div className="item-image">{item.image||"📦"}<span className="pill">{item.exchange_type}</span></div><div className="card-body"><div className="card-top"><span className="category">{item.category}</span><button className="icon-btn" onClick={onSave} title="Save"><Heart size={17}/></button></div><h3>{item.name}</h3><p>{item.description}</p><div className="meta"><span><Tag size={14}/>{item.condition}</span><span><MapPin size={14}/>{item.location}</span></div><div className="card-footer"><small>Posted by {item.owner_name}</small><button className="btn small outline">View Details</button></div></div></article>}
+function ItemCard({item,onSave}){return <article className="item-card card"><div className="item-image">{item.image||"📦"}<span className="pill">{item.exchange_type}</span></div><div className="card-body"><div className="card-top"><span className="category">{item.category}</span><button className="icon-btn" onClick={onSave} title="Save"><Heart size={17}/></button></div><h3>{item.name}</h3><p>{item.description}</p><div className="meta"><span><Tag size={14}/>{item.condition}</span><span><MapPin size={14}/>{item.location}</span></div><div className="card-footer"><small>Posted by {item.owner_name}</small><button
+  className="btn small outline"
+  onClick={() => alert("BUTTON IS WORKING")}
+>
+  View Details
+</button></div></div></article>}
 
 function ItemModal({onClose,onCreated}) {
   const [form,setForm]=useState({name:"",description:"",category:"Books",condition:"Good",exchangeType:"Exchange",location:"",preferredExchange:""});
@@ -224,7 +229,14 @@ function Announcements(){
   return <Page><PageHero icon={<Bell/>} title="Announcements" text="Important college, department, examination, scholarship and club updates."/>
     <section className="section"><div className="container"><div className="filters"><div className="search"><Search/><input value={q} onChange={e=>setQ(e.target.value)} placeholder="Search announcements…" onKeyDown={e=>e.key==="Enter"&&load()}/></div><button className="btn outline" onClick={load}>Search</button></div><div className="three-grid">{items.map(a=><AnnouncementCard key={a.id} a={a}/>)}</div></div></section></Page>
 }
-function AnnouncementCard({a}){return <article className="announcement card"><div className="card-top"><span className="category">{a.category}</span>{a.priority==="Urgent"&&<span className="priority"><AlertTriangle size={13}/> Urgent</span>}</div><h3>{a.title}</h3><p>{a.description}</p><div className="card-footer"><small>{new Date(a.published_at).toLocaleDateString()}</small><button className="btn small outline">Read More</button></div></article>}
+function AnnouncementCard({a}){return <article className="announcement card"><div className="card-top"><span className="category">{a.category}</span>{a.priority==="Urgent"&&<span className="priority"><AlertTriangle size={13}/> Urgent</span>}</div><h3>{a.title}</h3><p>{a.description}</p><div className="card-footer"><small>{new Date(a.published_at).toLocaleDateString()}</small><button
+  className="btn small outline"
+  onClick={() => alert(
+    `Announcement: ${announcement.title}\n\nCategory: ${announcement.category}\n\n${announcement.description}\n\nDate: ${announcement.date}`
+  )}
+>
+  Read More
+</button></div></article>}
 
 function Clubs({user}){
   const [clubs,setClubs]=useState([]),[q,setQ]=useState("");
