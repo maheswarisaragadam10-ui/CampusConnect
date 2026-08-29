@@ -253,7 +253,52 @@ function ItemModal({onClose,onCreated}) {
     {error&&<div className="error full">{error}</div>}<button className="btn primary full">Publish Item</button>
   </form></Modal>
 }
+function ItemCard({item,onSave}){
+  return (
+    <article className="item-card card">
+      <div className="item-image">
+        {item.image || "📦"}
+        <span className="pill">{item.exchange_type}</span>
+      </div>
 
+      <div className="card-body">
+        <div className="card-top">
+          <span className="category">{item.category}</span>
+          <button className="icon-btn" onClick={onSave} title="Save">
+            <Heart size={17}/>
+          </button>
+        </div>
+
+        <h3>{item.name}</h3>
+        <p>{item.description}</p>
+
+        <div className="meta">
+          <span><Tag size={14}/>{item.condition}</span>
+          <span><MapPin size={14}/>{item.location}</span>
+        </div>
+
+        <div className="card-footer">
+          <small>Posted by {item.owner_name}</small>
+
+          <button
+            className="btn small outline"
+            onClick={() => alert(
+              `Item: ${item.name}\n\n` +
+              `Category: ${item.category}\n` +
+              `Description: ${item.description}\n` +
+              `Condition: ${item.condition}\n` +
+              `Location: ${item.location}\n` +
+              `Type: ${item.exchange_type}\n` +
+              `Posted by: ${item.owner_name}`
+            )}
+          >
+            View Details
+          </button>
+        </div>
+      </div>
+    </article>
+  );
+}
 function Announcements(){
   const [items,setItems]=useState([]),[q,setQ]=useState("");
   const load=()=>api(`/api/announcements?search=${encodeURIComponent(q)}`).then(setItems);
