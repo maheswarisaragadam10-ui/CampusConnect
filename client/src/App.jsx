@@ -68,9 +68,9 @@ function Navbar({user,setUser}) {
   return <header className="navbar">
     <div className="container nav-inner">
       <Link className="brand" to="/" onClick={()=>setOpen(false)}>
-        <span className="brand-mark"><Leaf size={20}/></span>
-        <span>Campus<span>Connect</span></span>
-      </Link>
+  <span className="brand-mark"><Leaf size={20}/></span>
+  <span>Campus<span>Connect</span></span>
+</Link>
       <button className="mobile-menu" onClick={()=>setOpen(!open)} aria-label="Toggle menu">{open?<X/>:<Menu/>}</button>
       <nav className={`nav-links ${open?"open":""}`}>
         {links.map(([label,path])=><NavLink key={path} to={path} end={path==="/"} onClick={()=>setOpen(false)}>{label}</NavLink>)}
@@ -149,6 +149,8 @@ function HomePage({user}) {
       <div className="container">
         <SectionTitle eyebrow="Sustainable marketplace" title="Featured items" link="/marketplace"/>
         <div className="four-grid">{items.map(i=><ItemCard key={i.id} item={i}/>)}</div>
+
+        
       </div>
     </section>
 
@@ -192,7 +194,7 @@ function Marketplace({user}) {
     <section className="section"><div className="container">
       <div className="filters"><div className="search"><Search/><input value={q} onChange={e=>setQ(e.target.value)} onKeyDown={e=>e.key==="Enter"&&load()} placeholder="Search items…"/></div><select value={filter} onChange={e=>setFilter(e.target.value)}><option value="">All categories</option>{categories.map(c=><option key={c}>{c}</option>)}</select><button className="btn outline" onClick={load}>Search</button></div>
       {msg&&<div className="notice">{msg}</div>}
-      <div className="four-grid">{items.map(i=><ItemCard key={i.id} item={i} onSave={()=>save(i.id)}/>)}</div>
+      <div className="four-grid">{items.map(i=><ItemCard key={i.id} item={i} onSave={()=>save(i.id)} user={user}/>)}</div>
       {!items.length&&<Empty title="No items found" text="Try a different search or post the first item."/>}
     </div></section>
     {modal&&<ItemModal onClose={()=>setModal(false)} onCreated={()=>{setModal(false);load();}}/>}
@@ -238,65 +240,143 @@ function AnnouncementCard({a}) {
     </article>
   );
 }
-function ItemModal({onClose,onCreated}) {
-  const [form,setForm]=useState({name:"",description:"",category:"Books",condition:"Good",exchangeType:"Exchange",location:"",preferredExchange:""});
+function ItemModal({onClose,onCreated,item}) {
+  const [form,setForm]=useState({
+  name:"",
+  description:"",
+  category:"Books",
+  condition:"Good",
+  exchangeType:"Exchange",
+  location:"",
+  preferredExchange:"",
+  phone:""
+});
   const [error,setError]=useState("");
-  const submit=async e=>{e.preventDefault();try{await api("/api/items",{method:"POST",body:JSON.stringify(form)});onCreated()}catch(e){setError(e.message)}};
-  return <Modal title="Post an Item" onClose={onClose}><form onSubmit={submit} className="form-grid">
+  useEffect(() => {
+  if (item) {
+    setForm({
+      name: item.name || "",
+      description: item.description || "",
+      category: item.category || "Books",
+      condition: item.condition || "Good",
+      exchangeType: item.exchange_type || "Exchange",
+      location: item.location || "",
+      preferredExchange: item.preferred_exchange || "",
+      phone: item.phone || ""
+    });
+  }
+}, [item]);
+  const submit=async e=>{
+  e.preventDefault();
+  try{
+    if(item){
+      await api(`/api/items/${item.id}`,{
+        method:"PUT",
+        body:JSON.stringify(form)
+      });
+    }else{
+      await api("/api/items",{
+        method:"POST",
+        body:JSON.stringify(form)
+      });
+    }
+    onCreated();
+  }catch(e){
+    setError(e.message);
+  }
+};
+  return <Modal title={item ? "Edit Item" : "Post an Item"} onClose={onClose}><form onSubmit={submit} className="form-grid">
     <Field label="Item name *"><input required value={form.name} onChange={e=>setForm({...form,name:e.target.value})}/></Field>
     <Field label="Category *"><select value={form.category} onChange={e=>setForm({...form,category:e.target.value})}>{categories.map(c=><option key={c}>{c}</option>)}</select></Field>
     <Field label="Condition *"><select value={form.condition} onChange={e=>setForm({...form,condition:e.target.value})}><option>Excellent</option><option>Good</option><option>Fair</option></select></Field>
     <Field label="Exchange type *"><select value={form.exchangeType} onChange={e=>setForm({...form,exchangeType:e.target.value})}><option>Exchange</option><option>Donation</option><option>Giveaway</option></select></Field>
     <Field label="Campus location *"><input required value={form.location} onChange={e=>setForm({...form,location:e.target.value})}/></Field>
     <Field label="Preferred exchange"><input value={form.preferredExchange} onChange={e=>setForm({...form,preferredExchange:e.target.value})}/></Field>
+    <Field label="Phone number *">
+  <input
+    required
+    type="tel"
+    value={form.phone}
+    onChange={e=>setForm({...form,phone:e.target.value})}
+    placeholder="Enter your phone number"
+  />
+</Field>
     <Field label="Description *" full><textarea required rows="4" value={form.description} onChange={e=>setForm({...form,description:e.target.value})}/></Field>
-    {error&&<div className="error full">{error}</div>}<button className="btn primary full">Publish Item</button>
+    {error&&<div className="error full">{error}</div>}
+<button className="btn primary full">
+  {item ? "Save Changes" : "Publish Item"}
+</button>
   </form></Modal>
 }
-function ItemCard({item,onSave}){
+function ItemCard({item,onSave,user}){
+  const [edit,setEdit]=useState(false);
+
   return (
-    <article className="item-card card">
-      <div className="item-image">
-        {item.image || "📦"}
-        <span className="pill">{item.exchange_type}</span>
-      </div>
-
-      <div className="card-body">
-        <div className="card-top">
-          <span className="category">{item.category}</span>
-          <button className="icon-btn" onClick={onSave} title="Save">
-            <Heart size={17}/>
-          </button>
+    <>
+      <article className="item-card card">
+        <div className="item-image">
+          {item.image || "📦"}
+          <span className="pill">{item.exchange_type}</span>
         </div>
 
-        <h3>{item.name}</h3>
-        <p>{item.description}</p>
+        <div className="card-body">
+          <div className="card-top">
+            <span className="category">{item.category}</span>
+            <button className="icon-btn" onClick={onSave} title="Save">
+              <Heart size={17}/>
+            </button>
+          </div>
 
-        <div className="meta">
-          <span><Tag size={14}/>{item.condition}</span>
-          <span><MapPin size={14}/>{item.location}</span>
-        </div>
+          <h3>{item.name}</h3>
+          <p>{item.description}</p>
 
-        <div className="card-footer">
-          <small>Posted by {item.owner_name}</small>
+          <div className="meta">
+            <span><Tag size={14}/>{item.condition}</span>
+            <span><MapPin size={14}/>{item.location}</span>
+          </div>
 
-          <button
-            className="btn small outline"
-            onClick={() => alert(
-              `Item: ${item.name}\n\n` +
-              `Category: ${item.category}\n` +
-              `Description: ${item.description}\n` +
-              `Condition: ${item.condition}\n` +
-              `Location: ${item.location}\n` +
-              `Type: ${item.exchange_type}\n` +
-              `Posted by: ${item.owner_name}`
+          <div className="card-footer">
+            <small>Posted by {item.owner_name}</small>
+
+            {user && user.id === item.user_id && (
+              <button
+                className="btn small outline"
+                onClick={() => setEdit(true)}
+              >
+                Edit
+              </button>
             )}
-          >
-            View Details
-          </button>
+
+            <button
+              className="btn small outline"
+              onClick={() => alert(
+                `Item: ${item.name}\n\n` +
+                `Category: ${item.category}\n` +
+                `Description: ${item.description}\n` +
+                `Condition: ${item.condition}\n` +
+                `Location: ${item.location}\n` +
+                `Type: ${item.exchange_type}\n` +
+                `Phone: ${item.phone || "Not provided"}\n` +
+                `Posted by: ${item.owner_name}`
+              )}
+            >
+              View Details
+            </button>
+          </div>
         </div>
-      </div>
-    </article>
+      </article>
+
+      {edit && (
+        <ItemModal
+          item={item}
+          onClose={() => setEdit(false)}
+          onCreated={() => {
+            setEdit(false);
+            window.location.reload();
+          }}
+        />
+      )}
+    </>
   );
 }
 function Announcements(){
@@ -382,7 +462,7 @@ function Auth({mode,setUser}){
     <section className="auth-section">
       <div className="auth-card card">
         <div className="auth-brand">
-          <span className="brand-mark"><Leaf size={22}/></span>
+        
           <h1>{login?"Welcome back":"Join CampusConnect"}</h1>
           <p>{login?"Sign in to your campus community.":"Create your student community account."}</p>
         </div>
