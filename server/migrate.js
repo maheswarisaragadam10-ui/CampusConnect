@@ -55,7 +55,29 @@ async function migrate() {
         console.error(`Error migrating ${table}:`, error.message);
       }
     }
+      }
+
+  const sequenceTables = [
+  "users",
+  "announcements",
+  "clubs",
+  "events",
+  "items",
+  "lost_found",
+  "notifications"
+];
+
+  for (const table of sequenceTables) {
+    await pg.one(`
+      SELECT setval(
+        pg_get_serial_sequence('"${table}"', 'id'),
+        COALESCE((SELECT MAX(id) FROM "${table}"), 1),
+        true
+      )
+    `);
   }
+
+  console.log("Database ID sequences fixed.");
 
   console.log("Migration completed successfully.");
 

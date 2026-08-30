@@ -276,11 +276,15 @@ app.post("/api/items", auth, async (req, res) => {
       phone
     ]);
 
-    await db.none(
-      "INSERT INTO notifications(user_id,message) VALUES($1,$2)",
-      [req.user.id, `Your item "${name}" was posted successfully.`]
-    );
-
+    await db.none(`
+  INSERT INTO notifications(user_id, message)
+  SELECT id, $1
+  FROM users
+  WHERE id <> $2
+`, [
+  `New item posted: "${name}"`,
+  req.user.id
+]);
     const item = await db.one(`
       SELECT items.*, users.name AS owner_name
       FROM items
@@ -623,6 +627,24 @@ app.post("/api/lost-found", auth, async (req, res) => {
       location,
       image
     ]);
+
+    // Notify all other users
+    await db.tx(async t => {
+  const users = await t.any(
+    "SELECT id FROM users WHERE id <> $1",
+    [req.user.id]
+  );
+
+  for (const user of users) {
+    await t.none(
+      "INSERT INTO notifications(user_id, message) VALUES($1, $2)",
+      [
+        user.id,
+        `New ${type.toLowerCase()} item posted: "${name}"`
+      ]
+    );
+  }
+});
 
     res.status(201).json(await db.one(`
       SELECT lost_found.*, users.name AS poster_name
