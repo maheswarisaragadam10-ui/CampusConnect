@@ -14,6 +14,13 @@ a{text-decoration:none;color:inherit}button,input,select,textarea{font:inherit}b
 .brand{display:flex;align-items:center;gap:10px;font-weight:800;font-size:19px;letter-spacing:-.5px}.brand>span:last-child>span{color:var(--green)}
 .brand-mark{width:38px;height:38px;display:grid;place-items:center;border-radius:12px;background:var(--green-soft);color:var(--green)}
 .nav-links{display:flex;align-items:center;gap:4px}.nav-links a{padding:10px 11px;border-radius:10px;color:#536059;font-size:13px;font-weight:600}.nav-links a:hover,.nav-links a.active{background:var(--green-soft);color:var(--green-dark)}.nav-login{margin-left:8px!important}.nav-links .primary{color:white!important}
+.nav-links .primary{
+  background:var(--green);
+  color:white!important;
+  padding:10px 18px;
+  border-radius:10px;
+  font-weight:700;
+}
 .mobile-menu{display:none;background:none;border:0;color:var(--ink)}
 .hero{padding:78px 0 62px;background:linear-gradient(135deg,#f7fbf8,#eef6f4)}
 .hero-grid{display:grid;grid-template-columns:1.05fr .95fr;gap:50px;align-items:center}.eyebrow{display:inline-flex;align-items:center;gap:7px;color:var(--blue);font-size:12px;font-weight:800;letter-spacing:.08em;text-transform:uppercase}.eyebrow.green{color:var(--green)}
